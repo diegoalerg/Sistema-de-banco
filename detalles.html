@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <title>Propuesto AJAX</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>    
+   
+</head>
+<body>
+        <div class="container">
+            <h3 class="">Detalles de la cuenta</h3>
+            <div>
+                <table class="table table-bordered table-hover" id="tbl_cuenta">
+                    <tr>
+                        <th>FECHA</th><th>CANTIDAD</th><th>CONCEPTO</th>
+                    </tr>
+                    <tbody>
+                    
+                    </tbody>
+                </table>
+                <br>
+                <table class="table table-bordered table-hover">
+                    <tr>
+                        <td>SALDO ACTUAL</td><td id="saldo_actual"></td>
+                    </tr>
+                </table>
+                
+            </div>  
+            <br>  
+            <div>
+                <form>
+                    CANTIDAD: <input type="text" name="cantidad" id="cantidad"><br><br>
+                    CONCEPTO: 
+                    <textarea name="concepto" id="concepto"> </textarea><br><br>
+                    <button type="button" name="movimiento" class="btn btn-success" value="INGRESAR" id="btn_ingresar" >INGRESAR </button>
+                    <button type="button" name="movimiento" class="btn btn-danger" value="RETIRAR" id="btn_retirar" > RETIRAR</button>
+
+                </form>
+            </div>
+        </div>
+<script>
+        $().ready( function() {
+            //OBTENGO EL NUMERO DE CUENTA DESDE LA URL
+            function parametroURL(_par) {
+                var _p = null;
+                if (location.search) location.search.substr(1).split("&").forEach(function(pllv) {
+                    var s = pllv.split("="), //separamos llave/valor
+                    ll = s[0],
+                    v = s[1] && decodeURIComponent(s[1]); //valor hacemos encode para prevenir url encode
+                    if (ll == _par) { //solo nos interesa si es el nombre del parametro a buscar
+                    if(_p==null){
+                    _p=v; //si es nula, quiere decir que no tiene valor, solo textual
+                    }else if(Array.isArray(_p)){
+                    _p.push(v); //si ya es arreglo, agregamos este valor
+                    }else{
+                    _p=[_p,v]; //si no es arreglo, lo convertimos y agregamos este valor
+                    }
+                    }
+                });
+                return _p;
+                }
+                    var cuenta = parametroURL('cuenta');
+                    console.log(cuenta);
+                llamar_tabla(cuenta);
+
+                llamar_saldo(cuenta);
+
+                infoboton(cuenta);
+            
+                  
+        }); 
+        function infoboton (cuenta) {
+            $("form").on("click", "#btn_ingresar", function () {
+                if (!$("input[name='cantidad']").val()) {
+                              alert("Cantidad vacio"); return; }
+                            if (!$("textarea[name='concepto']").val()) {
+                               alert("Concepto vacio"); return; }
+                    var mo = $('#btn_ingresar').val();
+                    var cantidad = $('#cantidad').val();
+                    var concepto = $('#concepto').val();
+                    console.log(cantidad);
+                    console.log(mo);
+                    console.log(cuenta);
+                    console.log(concepto);
+            $.post('detalles3.php', { 'concepto': concepto, 'cantidad': cantidad, 'cuenta': cuenta, 'movimiento': mo }, last,'json')
+                    .done(function( data, textStatus, jqXHR) {
+                        if (console && console.log) {
+                            console.log(data);
+                           // alert( "success ");
+                           llamar_saldo(cuenta);
+                            llamar_tabla(cuenta);
+                        }
+                    }).fail(function (jqXHR, textStatus, errorThrown) {
+                        if (console && console.log) {
+                            console.log(jqXHR);
+                            alert("Error: " + errorThrown);
+                        }   
+                    })
+                    .always(function() {
+                       // alert("finished");
+                    });
+                   
+                })
+            $("form").on("click", "#btn_retirar", function () {
+                if (!$("input[name='cantidad']").val()) {
+                              alert("Cantidad vacio"); return; }
+                            if (!$("textarea[name='concepto']").val()) {
+                               alert("Concepto vacio"); return; }
+                    var mo = $('#btn_retirar').val();
+                    var cantidad = $('#cantidad').val();
+                    var concepto = $('#concepto').val();
+                    console.log(cantidad);
+                    console.log(mo);
+                    console.log(cuenta);
+                    console.log(concepto);
+            $.post('detalles3.php', { 'concepto': concepto, 'cantidad': cantidad, 'cuenta': cuenta, 'movimiento': mo }, last,'json')
+                    .done(function( data, textStatus, jqXHR) {
+                        if (console && console.log) {
+                            console.log(data);
+                            //alert( "success ");
+                            llamar_saldo(cuenta);
+                            llamar_tabla(cuenta);
+                        }
+                    }).fail(function (jqXHR, textStatus, errorThrown) {
+                        if (console && console.log) {
+                            alert("Error: " + errorThrown);
+                        }   
+                    })
+                    .always(function() {
+                       // alert("finished");
+                    });
+                 
+                })
+            
+           
+        }
+        function llamar_tabla(cuenta) {
+             //Envio de datos  mediante post Y Obtencion de datos de la BD Movimientos
+             $.post('detalles.php', { 'cuenta' : cuenta }, tabla,'json')
+                    .done(function( data, textStatus, jqXHR) {
+                        if (console && console.log) {
+                            //alert( "success ");
+                        }
+                    }).fail(function (jqXHR, textStatus, errorThrown) {
+                        if (console && console.log) {
+                            alert("Error: " + errorThrown);
+                        }   
+                    })
+                    .always(function() {
+                        //alert("finished");
+                    });  
+                
+        }
+
+        function llamar_saldo(cuenta) {
+             //Envio de datos  mediante post Y Obtencion de datos de la BD Cuenta
+             $.post('detalles2.php', { 'cuenta' : cuenta }, movimiento,'json')
+                    .done(function( data, textStatus, jqXHR) {
+                        if (console && console.log) {
+                           // alert( "success ");
+                        }
+                    }).fail(function (jqXHR, textStatus, errorThrown) {
+                        if (console && console.log) {
+                            alert("Error: " + errorThrown);
+                        }   
+                    })
+                    .always(function() {
+                        //alert("finished");
+                    });
+            
+        }
+
+
+        
+        function tabla(info) {
+                //Se ha devuelto una matriz?
+                if (!$.isArray(info)) {
+                    alert("Se produjo un error", info.error);
+                    return;
+                }
+            //Eliminar filas existentes
+            $('#tbl_cuenta tbody tr').not(':first').remove();
+            //Generacion de filas por cada usuario
+            $(info).each( function( index, titu) {
+                $("#tbl_cuenta tbody")
+                .append($('<tr>')
+                    .append($('<td>')
+                        .html(titu.FECHA) )
+                    .append($('<td>')
+                        .html(titu.CANTIDAD))
+                    .append($('<td>')
+                        .html(titu.CONCEPTO))
+                );
+                //SE ME GENERA UNA DOBLE TABLA POR ENDE APLICO ESTO
+                $("#tbl_cuenta tr:last").remove();
+            });
+               
+        }
+
+        function movimiento(info2) {
+            
+                //Se ha devuelto una matriz?
+                if (!$.isArray(info2)) {
+                    alert("Se produjo un error", info2.error);
+                    return;
+                }
+                console.log(info2);
+                $(info2).each( function( index, titu) {
+                $("#saldo_actual").html(titu.SALDO)
+            });
+        }
+        function last(last) {
+            
+        }
+</script>
+<script src="../../js/bootstrap.min.js"></script>  
+</body>
+</html>

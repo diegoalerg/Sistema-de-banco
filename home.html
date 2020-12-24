@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <title>Propuesto AJAX</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>    
+    <script>
+        $().ready( function() {
+            
+            //Genero la consulta al controlador
+            $("form").on("submit", function( event ) {
+                event.preventDefault();
+                //Validacion de campos. No deben estar vacios
+                if (!$("input[name='titular']").val()) {
+                    alert("Titular vacio"); return; }
+                    //Serializacion de campos de texto del formulario
+                    var datos = $("input[name='titular']").val();
+                
+                    //Envio de datos serializados mediante post Y Obtencion actuales
+                  $.post('home.php', { 'datos' : datos }, refrescar,'json')
+                    .done(function( data, textStatus, jqXHR) {
+                        if (console && console.log) {
+                            //alert( "success ");
+                            console.log(data);
+                        }
+                    }).fail(function (jqXHR, textStatus, errorThrown) {
+                        if (console && console.log) {
+                            alert("Error: " + textStatus);
+                            alert("Error: " + errorThrown);
+                        }   
+                    })
+                    .always(function() {
+                        //alert("finished");
+                    });
+                
+            })
+            //Limpieza de campos
+            $("input[name='titular']").val('');
+                    
+        });
+       
+    
+        function refrescar(info) {
+            console.log(info);
+            //$.param( info );
+                //Se ha devuelto una matriz?
+                if (!$.isArray(info)) {
+                    alert("Se produjo un error", info.error);
+                    return;
+                }
+            //Eliminar filas existentes
+            $('#tbl_usuario tbody tr').not(':first').remove();
+            //Generacion de filas por cada usuario
+            $(info).each( function( index, titu) {
+                $("#tbl_usuario tbody")
+                .append($('<tr>')
+                    .append($('<td>')
+                        .html('<a href=detalles.html?cuenta='+titu.NUMERO_CUENTA+'>'+titu.NUMERO_CUENTA+'</a>') )
+                    .append($('<td>')
+                        .html(titu.TITULAR))
+                    .append($('<td>')
+                        .html(titu.SALDO))
+                    .append($('<td>')
+                        .html(titu.INTERES))
+                        
+                );
+                //SE ME GENERA UNA DOBLE TABLA POR ENDE APLICO ESTO
+                $("#tbl_usuario tr:last").remove();
+            });   
+        }
+    </script>
+</head>
+<body>
+    <div class="table-responsive">
+        <div class="container">
+            <h3>Datos de la cuenta</h3>
+            <div>
+                <form>
+                    <div class="form-group">
+                        Titular: <input type="text" class="form-control" name="titular"> 
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" class="btn btn-info" value="OBTENER" id="boton">
+                    </div>
+                </form>
+            </div>
+            <div>
+                <table class="table table-bordered table-hover" id="tbl_usuario">
+                    <tr>
+                        <th>NCUENTA</th><th>TITULAR</th><th>SALDO</th><th>INTERES</th>
+                    </tr>
+                    <tbody>
+                    
+                    </tbody>
+                </table>
+            </div>  
+        </div>
+    </div>
+    <script src="../../js/bootstrap.min.js"></script>  
+</body>
+</html>
